@@ -10,11 +10,16 @@ struct Node {
   bool isBlack = false;
   Node* left = NULL;
   Node* right = NULL;
+  Node* parent = NULL;
 };
 
 //function prototypes
-Node* addNode(Node*, int);
-void getInput(Node*&);
+void consoleInput(Node*&);
+void fileInput(Node*&);
+void insertNode(Node*, Node*);
+void insertFixup(Node*, Node*);
+void leftRotate(Node*, Node*);
+void rightRotate(Node*, Node*);
 void printTree(Node*, int depth);
 
 
@@ -29,9 +34,9 @@ int main() {
     cout << ">> ";
     cin >> input;
     if (strcmp(input, "ADD") == 0) {
-      getInput(tree);
+      consoleInput(tree);
     } else if (strcmp(input, "READ") == 0) {
-      
+      fileInput(tree);
     } else if (strcmp(input, "PRINT") == 0) {
       cout << "White text = Black node" << endl;
       cout << "Red text = Red node" << endl;
@@ -46,67 +51,84 @@ int main() {
 }
 
 
-//adds a node to tree via console or file input
-Node* addNode(Node* tree, int newValue) {
-  if (!tree) { //if null, this is where to add
-    tree = new Node;
-    tree->value = newValue;
-    return tree;
+//get input through console or through a file
+void consoleInput(Node* &tree) {
+  char data[300];
+  cout << "Please enter a series of space separated integers between 1 and 999:" << endl;
+  cin.get();
+  cin.get(data, 300);
+  cin.get();
+
+  //use string tokenizer to split on spaces and copy into the tree
+  char *ptr;
+  ptr = strtok(data, " ");
+
+  while (ptr) {
+    Node* newNode = new Node;
+    newNode->value = atoi(ptr);
+    insertNode(tree, newNode);
+    ptr = strtok(NULL, " ");
   }
-  if (tree->value < newValue) { //recursively go left or right until you are where you need to add
-    tree->right = addNode(tree->right, newValue);
-  } else if (tree->value > newValue) {
-    tree->left = addNode(tree->left, newValue);
-  }
-  return tree;
 }
 
-//get input through console or through a file
-void getInput(Node* &tree) {
-  char method[10];
-  cout << "Add by FILE or by CONSOLE? ";
-
+void fileInput(Node* &tree) {
   char data[300];
-  int i = 0;
-  while (true) {
-    cin >> method;
+  char fileName[30];
+  cout << "File name: ";
+  cin >> fileName;
 
-    if (strcmp(method, "FILE") == 0) { //if FILE option, open and read file
-      char fileName[30];
-      cout << "File name: ";
-      cin >> fileName;
+  ifstream numbers;
+  srand(time(0));
+  numbers.open(fileName);
+  if (!numbers) {
+    cout << "Could not find/open " << fileName;
+    exit(1);
+  }
+  while (numbers >> data) { //copy all the numbers into the tree
+    Node* newNode = new Node;
+    newNode->value = atoi(data);
+    insertNode(tree, newNode);
+  }
+}
 
-      ifstream numbers;
-      srand(time(0));
-      numbers.open(fileName);
-      if (!numbers) {
-        cout << "Could not find/open " << fileName;
-        exit(1);
-      }
-      while (numbers >> data) { //copy all the numbers into the tree
-        tree = addNode(tree, atoi(data));
-      }
-      break;
-    } else if (strcmp(method, "CONSOLE") == 0) {
-      cout << "Please enter a series of space separated integers between 1 and 999:" << endl;
-      cin.get();
-      cin.get(data, 300);
-      cin.get();
-
-      //use string tokenizer to split on spaces and copy into the tree
-      char *ptr;
-      ptr = strtok(data, " ");
-
-      while (ptr) {
-        tree = addNode(tree, atoi(ptr)); //parse and add the int
-        ptr = strtok(NULL, " ");
-      }
-      break;
+//adds a node to tree
+void insertNode(Node* tree, Node* newNode) {
+  Node* parent = NULL;
+  Node* current = tree;
+  while (current) {
+    parent = current;
+    if (newNode->value < current->value) {
+      current = current->left;
     } else {
-      cout << "Please enter either FILE or CONSOLE: ";
+      current = current->right;
     }
   }
-  cout << "Added." << endl;
+  
+  newNode->parent = parent;
+  if (!parent) {
+    tree = newNode;
+  } else if (newNode->value < parent->value) {
+    parent->left = newNode;
+  } else {
+    parent->right = newNode;
+  }
+
+  insertFixup(tree, newNode);
+}
+
+//fixes tree to have proper red and black properties
+void insertFixup(Node* tree, Node* newNode) {
+
+}
+
+//rotates tree to the left
+void leftRotate(Node* tree, Node* parent) {
+
+}
+
+//rotates tree to the right
+void rightRotate(Node* tree, Node* parent) {
+
 }
 
 //visually prints out tree horizontally using recursion
