@@ -6,7 +6,7 @@ using namespace std;
 
 //Node struct
 struct Node {
-  int value = -1;
+  int value;
   bool isBlack = false;
   Node* left = NULL;
   Node* right = NULL;
@@ -67,6 +67,7 @@ void consoleInput(Node* &tree) {
     insertNode(tree, atoi(ptr));
     ptr = strtok(NULL, " ");
   }
+  cout << "Added" << endl;
 }
 
 void fileInput(Node* &tree) {
@@ -85,6 +86,7 @@ void fileInput(Node* &tree) {
   while (numbers >> data) { //copy all the numbers into the tree
     insertNode(tree, atoi(data));
   }
+  cout << "Added" << endl;
 }
 
 //adds a node to tree
@@ -117,11 +119,11 @@ void insertNode(Node* &tree, int newValue) {
 
 //fixes tree to have proper red and black properties
 void insertFixup(Node* &tree, Node* &newNode) {
-  cout << "hi" << endl;
+  Node* newNode = passedNode;
   while (newNode->parent && newNode->parent->isBlack == false) {
     if (newNode->parent == newNode->parent->parent->left) { //if newNode's parent is a left child
       Node* uncle = newNode->parent->parent->right;
-      if (uncle->isBlack == false) {
+      if (uncle && uncle->isBlack == false) {
 	newNode->parent->isBlack = true;
 	uncle->isBlack = true;
 	newNode->parent->parent->isBlack = false;
@@ -143,7 +145,6 @@ void insertFixup(Node* &tree, Node* &newNode) {
 	newNode->parent->parent->isBlack = false;
 	newNode = newNode->parent->parent;
       } else { //uncle is black
-	cout << "yo im chillin doh" << endl;
 	if (newNode == newNode->parent->left) {
 	  newNode = newNode->parent;
 	  rightRotate(tree, newNode);
@@ -151,7 +152,6 @@ void insertFixup(Node* &tree, Node* &newNode) {
 	newNode->parent->isBlack = true;
 	newNode->parent->parent->isBlack = false;
 	leftRotate(tree, newNode->parent->parent);
-	printTree(tree, 0);
       }
     }
     tree->isBlack = true;
@@ -161,20 +161,19 @@ void insertFixup(Node* &tree, Node* &newNode) {
 
 //rotates tree to the left
 void leftRotate(Node* &tree, Node* &parent) {
-  printTree(tree, 0);
-  cout << parent->parent->value << endl;
   Node* child = parent->right;
   parent->right = child->left; //parent's new right is child's left
-  cout << parent->value << endl;
   if (child->left) {
     child->left->parent = parent; //update child's left parent
-    cout << "uh" << endl;
   }
-  child->parent = parent->parent; //update child's parent BAD BAD BAD
-  cout << parent->value << endl;
-  printTree(tree, 0);
-  if (!parent->parent) { //if parent had no parent, it was root (child is now parent) 
-    cout << "why??" << endl;
+  Node* temp = new Node;
+  temp->value = child->value;
+  temp->isBlack = child->isBlack;
+  temp->left = child->left;
+  temp->right = child->right;
+  temp->parent = parent->parent;
+  child = temp; //literally all of this just to update child's parent bc I am ape
+  if (tree == parent) { //if parent had no parent, it was root (child is now parent) 
     tree = child;
   } else if (parent == parent->parent->left) { //update old parent's parent's child to be the old child (left or right) 
     parent->parent->left = child;
@@ -192,7 +191,13 @@ void rightRotate(Node* &tree, Node* &parent) {
   if (child->right) {
     child->right->parent = parent;
   }
-  child->parent = parent->parent;
+  Node* temp = new Node;
+  temp->value = child->value;
+  temp->isBlack = child->isBlack;
+  temp->left = child->left;
+  temp->right = child->right;
+  temp->parent = parent->parent;
+  child = temp;
   if (!parent->parent) {
     tree = child;
   } else if (parent == parent->parent->right) {
@@ -211,22 +216,22 @@ void printTree(Node* root, int depth) {
   printTree(root->right, depth+1); //print top (right) root
 
   for (int i = 0; i < depth; i++) { //spacing
-    cout << "          ";
+    cout << "             ";
   }
   if (root->isBlack) {
-    cout << "\033[37m" << root->value << "\033[0m" << "p: ";
+    cout << "\033[37m" << root->value << "\033[0m" << "(p: ";
     if (root->parent) {
-      cout << root->parent->value << endl;
+      cout << root->parent->value << ")" << endl;
     } else {
-      cout << "null" << endl;
+      cout << "null)" << endl;
     }
     //  << endl; //print data w/ white text (black node)
   } else {
-    cout << "\033[31m" << root->value << "\033[0m" << "p: "; //endl; //print data w/ red text (red node)
+    cout << "\033[31m" << root->value << "\033[0m" << "(p: "; //endl; //print data w/ red text (red node)
     if (root->parent) {
-      cout << root->parent->value << endl;
+      cout << root->parent->value << ")" << endl;
     } else {
-      cout << "null" << endl;
+      cout << "null)" << endl;
     }
   }
 
