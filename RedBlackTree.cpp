@@ -1,3 +1,12 @@
+/*
+ * Red-Black Tree
+ * Author: Andy Fleischer
+ * Date: 1/11/2021
+ * Credits to http://software.ucv.ro/~mburicea/lab8ASD.pdf
+ * for pseudocode for fixup and rotations
+ */
+
+
 #include <iostream>
 #include <cstring>
 #include <fstream>
@@ -51,7 +60,7 @@ int main() {
 }
 
 
-//get input through console or through a file
+//get input through console
 void consoleInput(Node* &tree) {
   char data[300];
   cout << "Please enter a series of space separated integers between 1 and 999:" << endl;
@@ -70,6 +79,7 @@ void consoleInput(Node* &tree) {
   cout << "Added" << endl;
 }
 
+//get input as a file
 void fileInput(Node* &tree) {
   char data[300];
   char fileName[30];
@@ -117,19 +127,20 @@ void insertNode(Node* &tree, int newValue) {
   insertFixup(tree, newNode);
 }
 
+
 //fixes tree to have proper red and black properties
-void insertFixup(Node* &tree, Node* &newNode) {
+void insertFixup(Node* &tree, Node* &passedNode) {
   Node* newNode = passedNode;
   while (newNode->parent && newNode->parent->isBlack == false) {
     if (newNode->parent == newNode->parent->parent->left) { //if newNode's parent is a left child
       Node* uncle = newNode->parent->parent->right;
-      if (uncle && uncle->isBlack == false) {
+      if (uncle && uncle->isBlack == false) { //uncle exists and is red
 	newNode->parent->isBlack = true;
 	uncle->isBlack = true;
 	newNode->parent->parent->isBlack = false;
-	newNode = newNode->parent->parent;
+	newNode = newNode->parent->parent; //recall on grandparent
       } else { //uncle is black
-	if (newNode == newNode->parent->right) {
+	if (newNode == newNode->parent->right) { //if right child, left rotate first
 	  newNode = newNode->parent;
 	  leftRotate(tree, newNode);
 	}
@@ -143,9 +154,9 @@ void insertFixup(Node* &tree, Node* &newNode) {
 	newNode->parent->isBlack = true;
 	uncle->isBlack = true;
 	newNode->parent->parent->isBlack = false;
-	newNode = newNode->parent->parent;
+	newNode = newNode->parent->parent; //recall on grandparent
       } else { //uncle is black
-	if (newNode == newNode->parent->left) {
+	if (newNode == newNode->parent->left) { //if left child, right rotate first
 	  newNode = newNode->parent;
 	  rightRotate(tree, newNode);
 	}
@@ -159,20 +170,16 @@ void insertFixup(Node* &tree, Node* &newNode) {
   tree->isBlack = true;
 }
 
+
 //rotates tree to the left
-void leftRotate(Node* &tree, Node* &parent) {
+void leftRotate(Node* &tree, Node* &passedParent) {
+  Node* parent = passedParent;
   Node* child = parent->right;
   parent->right = child->left; //parent's new right is child's left
   if (child->left) {
     child->left->parent = parent; //update child's left parent
   }
-  Node* temp = new Node;
-  temp->value = child->value;
-  temp->isBlack = child->isBlack;
-  temp->left = child->left;
-  temp->right = child->right;
-  temp->parent = parent->parent;
-  child = temp; //literally all of this just to update child's parent bc I am ape
+  child->parent = parent->parent; //child's parent is parent's parent
   if (tree == parent) { //if parent had no parent, it was root (child is now parent) 
     tree = child;
   } else if (parent == parent->parent->left) { //update old parent's parent's child to be the old child (left or right) 
@@ -185,19 +192,14 @@ void leftRotate(Node* &tree, Node* &parent) {
 }
 
 //rotates tree to the right. Same idea as left rotate, but flipped
-void rightRotate(Node* &tree, Node* &parent) {
+void rightRotate(Node* &tree, Node* &passedParent) {
+  Node* parent = passedParent;
   Node* child = parent->left;
   parent->left = child->right;
   if (child->right) {
     child->right->parent = parent;
   }
-  Node* temp = new Node;
-  temp->value = child->value;
-  temp->isBlack = child->isBlack;
-  temp->left = child->left;
-  temp->right = child->right;
-  temp->parent = parent->parent;
-  child = temp;
+  child->parent = parent->parent;
   if (!parent->parent) {
     tree = child;
   } else if (parent == parent->parent->right) {
